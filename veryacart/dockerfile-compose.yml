@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: RootPass123!
+      MYSQL_DATABASE: vericart
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  user_service:
+    build: ./user_service
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+  product_service:
+    build: ./product_service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+  order_service:
+    build: ./order_service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - db
+      - rabbitmq
+      - payment_service
+  payment_service:
+    build: ./payment_service
+    ports:
+      - "5003:5003"
+    depends_on:
+      - db
+  notification_service:
+    build: ./notification_service
+    depends_on:
+      - db
+      - rabbitmq
+volumes:
+  db_data:
